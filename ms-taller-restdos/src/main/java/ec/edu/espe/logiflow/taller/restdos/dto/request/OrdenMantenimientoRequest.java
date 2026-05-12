@@ -15,6 +15,10 @@ public class OrdenMantenimientoRequest {
     private String matricula;
 
     @NotBlank(message = "La descripción es obligatoria")
-    @Size(max = 255, message = "La descripción no puede superar los 255 caracteres")
+    @Size(min = 10, max = 200, message = "La descripción debe tener entre 10 y 200 caracteres")
+    @Pattern(
+            regexp = "^(?!.*([a-záéíóúñ0-9\\s])\\1{2})(?!.*[.,\\-]{2})(?!.*\\b(\\w+)\\s+\\2\\b)[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\\s.,\\-]+$",
+            message = "La descripción debe iniciar con mayúscula y continuar solo con minúsculas. No se permiten signos de puntuación juntos (ej. .. o ,,), letras/espacios repetidos 3 veces, ni palabras repetidas consecutivamente."
+    )
     private String descripcion;
 }

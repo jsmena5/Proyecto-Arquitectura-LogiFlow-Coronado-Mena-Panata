@@ -11,7 +11,8 @@ import java.util.UUID;
 public class ConductorResponse {
     private UUID id;
     private String dni;
-    private String nombreCompleto;
+    private String primerNombre;
+    private String apellido;
     private String numeroLicencia;
     private String tipoLicencia;
     private Boolean activo;

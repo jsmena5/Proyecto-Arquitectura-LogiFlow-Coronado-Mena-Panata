@@ -21,8 +21,11 @@ public class Conductor {
     @Column(nullable = false, unique = true, length = 15)
     private String dni;
 
-    @Column(name = "nombre_completo", nullable = false, length = 100)
-    private String nombreCompleto;
+    @Column(name = "primer_nombre", nullable = false, length = 50)
+    private String primerNombre;
+
+    @Column(name = "apellido", nullable = false, length = 50)
+    private String apellido;
 
     @Column(name = "numero_licencia", nullable = false, unique = true, length = 9)
     private String numeroLicencia;

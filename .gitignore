@@ -1,0 +1,19 @@
+# Archivos de IntelliJ IDEA (Configuraciones locales de tu PC)
+.idea/
+*.iml
+*.iws
+*.class
+
+# Carpetas de compilación de Maven (Binarios)
+target/
+ms-flota-restA/target/
+ms-taller-restdos/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+
+# Logs y SO
+*.log
+.DS_Store
+Thumbs.db

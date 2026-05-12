@@ -33,7 +33,8 @@ public class ConductorServiceImpl implements ConductorService {
 
         Conductor conductor = Conductor.builder()
                 .dni(request.getDni())
-                .nombreCompleto(request.getNombreCompleto().trim())
+                .primerNombre(request.getPrimerNombre().trim())
+                .apellido(request.getApellido().trim())
                 .numeroLicencia(request.getNumeroLicencia().toUpperCase())
                 .tipoLicencia(request.getTipoLicencia().toUpperCase())
                 .activo(true)
@@ -47,7 +48,8 @@ public class ConductorServiceImpl implements ConductorService {
         Conductor conductor = conductorRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conductor no encontrado"));
 
-        conductor.setNombreCompleto(request.getNombreCompleto().trim());
+        conductor.setPrimerNombre(request.getPrimerNombre().trim());
+        conductor.setApellido(request.getApellido().trim());
         conductor.setTipoLicencia(request.getTipoLicencia().toUpperCase());
         conductor.setActivo(request.getActivo());
 
@@ -74,7 +76,8 @@ public class ConductorServiceImpl implements ConductorService {
         return ConductorResponse.builder()
                 .id(conductor.getId())
                 .dni(conductor.getDni())
-                .nombreCompleto(conductor.getNombreCompleto())
+                .primerNombre(conductor.getPrimerNombre())
+                .apellido(conductor.getApellido())
                 .numeroLicencia(conductor.getNumeroLicencia())
                 .tipoLicencia(conductor.getTipoLicencia())
                 .activo(conductor.getActivo())
