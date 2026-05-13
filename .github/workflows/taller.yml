@@ -42,7 +42,7 @@ jobs:
           -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata \
           -Dsonar.organization=jsmena5 \
           -Dsonar.host.url=https://sonarcloud.io \
-          -DskipTests \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
           -f ms-taller-restdos/pom.xml
 
       - name: Notificar a Telegram
