@@ -2,11 +2,11 @@ name: CI LogiFlow Taller
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "main", "development" ]
     paths:
-      - 'ms-taller-restdos/**' # Solo se activa si cambias archivos en tu carpeta
+      - 'ms-taller-restdos/**'
   pull_request:
-    branches: [ "development" ]
+    branches: [ "main", "development" ]
     paths:
       - 'ms-taller-restdos/**'
 
