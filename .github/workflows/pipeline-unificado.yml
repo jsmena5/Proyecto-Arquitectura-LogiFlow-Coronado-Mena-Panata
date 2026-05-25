@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# Prevenir ejecuciones duplicadas
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   # 1. COMPILACIÓN Y PRUEBAS EN PARALELO
   build-and-test:
@@ -34,14 +29,7 @@ jobs:
       - name: Compilar y testear microservicio
         run: |
           cd ${{ matrix.service }}
-          mvn clean test jacoco:report  # Asegura que se genere el reporte
-
-      # Guardar reportes de cobertura para después
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.service }}
-          path: ${{ matrix.service }}/target/site/jacoco/
+          mvn clean test
 
   # 2. ANÁLISIS DE CALIDAD
   analisis-sonarcloud:
@@ -61,12 +49,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Descargar reportes de cobertura
-      - name: Download coverage reports
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage-reports
-
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -74,35 +56,33 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      # Analizar Flota - CORREGIDO
+      # Analizar Flota
       - name: Analizar ms-flota-restA en SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd ms-flota-restA
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata \
-            -Dsonar.organization=jsmena5 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.java.binaries=target/classes
+          -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata \
+          -Dsonar.organization=jsmena5 \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.coverage.jacoco.xmlReportPaths=$(find . -name jacoco.xml \
+          -f ms-flota-restA/pom.xml
 
-      # Analizar Taller - CORREGIDO
+      # Analizar Taller
       - name: Analizar ms-taller-restdos en SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd ms-taller-restdos
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata-taller \
-            -Dsonar.organization=jsmena5 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.java.binaries=target/classes
+          -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata-taller \
+          -Dsonar.organization=jsmena5 \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.coverage.jacoco.xmlReportPaths=$(find . -name jacoco.xml \
+          -f ms-taller-restdos/pom.xml
 
-  # 3. NOTIFICACIÓN
+  # 3. NOTIFICACIÓN A TELEGRAM
   notificacion-telegram:
     name: Notificar a Telegram
     needs: analisis-sonarcloud
@@ -117,7 +97,9 @@ jobs:
           format: markdown
           message: |
             *🚀 Reporte LogiFlow - ESPE*
-            *Estado del Pipeline:* `${{ needs.analisis-sonarcloud.result == 'success' && '✅ ÉXITO' || '❌ FALLO' }}`
+            *Estado del Pipeline:* `${{ job.status == 'success' && '✅ ÉXITO' || '❌ FALLO' }}`
             *Rama:* `${{ github.ref_name }}`
             *Autor:* ${{ github.actor }}
-            *Cobertura:* Ver SonarCloud para detalles
+            
+            *📊 Análisis:* [Ver reporte en SonarCloud](https://sonarcloud.io/dashboard?id=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata)
+            *Logs:* [Ver ejecución en GitHub](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
