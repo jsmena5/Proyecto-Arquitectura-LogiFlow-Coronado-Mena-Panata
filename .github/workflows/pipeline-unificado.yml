@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# Prevenir ejecuciones duplicadas
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # 1. COMPILACIÓN Y PRUEBAS EN PARALELO
   build-and-test:
@@ -29,7 +34,14 @@ jobs:
       - name: Compilar y testear microservicio
         run: |
           cd ${{ matrix.service }}
-          mvn clean test
+          mvn clean test jacoco:report  # Asegura que se genere el reporte
+
+      # Guardar reportes de cobertura para después
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/site/jacoco/
 
   # 2. ANÁLISIS DE CALIDAD
   analisis-sonarcloud:
@@ -49,6 +61,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Descargar reportes de cobertura
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-reports
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -56,33 +74,35 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      # Analizar Flota
+      # Analizar Flota - CORREGIDO
       - name: Analizar ms-flota-restA en SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          cd ms-flota-restA
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata \
-          -Dsonar.organization=jsmena5 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-          -f ms-flota-restA/pom.xml
+            -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata \
+            -Dsonar.organization=jsmena5 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.java.binaries=target/classes
 
-      # Analizar Taller
+      # Analizar Taller - CORREGIDO
       - name: Analizar ms-taller-restdos en SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          cd ms-taller-restdos
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata-taller \
-          -Dsonar.organization=jsmena5 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-          -f ms-taller-restdos/pom.xml
+            -Dsonar.projectKey=jsmena5_Proyecto-Arquitectura-LogiFlow-Coronado-Mena-Panata-taller \
+            -Dsonar.organization=jsmena5 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.java.binaries=target/classes
 
-  # 3. NOTIFICACIÓN A TELEGRAM
+  # 3. NOTIFICACIÓN
   notificacion-telegram:
     name: Notificar a Telegram
     needs: analisis-sonarcloud
@@ -97,9 +117,7 @@ jobs:
           format: markdown
           message: |
             *🚀 Reporte LogiFlow - ESPE*
-            *Estado del Pipeline:* `${{ job.status == 'success' && '✅ ÉXITO' || '❌ FALLO' }}`
+            *Estado del Pipeline:* `${{ needs.analisis-sonarcloud.result == 'success' && '✅ ÉXITO' || '❌ FALLO' }}`
             *Rama:* `${{ github.ref_name }}`
             *Autor:* ${{ github.actor }}
-            
-            *📊 Análisis de Calidad:* SonarCloud Ejecutado
-            *Enlace:* [Ver logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            *Cobertura:* Ver SonarCloud para detalles
