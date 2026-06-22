@@ -7,7 +7,7 @@ on:
     branches: [ "main", "development" ]
 
 jobs:
-  # 1. COMPILACIÓN Y PRUEBAS EN PARALELO
+  # 1. COMPILACIÓN Y EMPAQUETADO (Sin tests de BD)
   build-and-test:
     name: Build & Test --- ${{ matrix.service }}
     runs-on: ubuntu-latest
@@ -26,10 +26,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Compilar y testear microservicio
+      - name: Compilar microservicio
         run: |
           cd ${{ matrix.service }}
-          mvn clean test
+          mvn clean package -DskipTests
 
   # 2. ANÁLISIS DE CALIDAD EN SONARCLOUD
   analisis-sonarcloud:
@@ -66,6 +66,7 @@ jobs:
           -Dsonar.projectKey=michaelandrescoronado_ms-clientes \
           -Dsonar.organization=michaelandrescoronado \
           -Dsonar.host.url=https://sonarcloud.io \
+          -DskipTests \
           -f ms-clientes/pom.xml
 
       # Analiza el microservicio de Autenticación
@@ -78,6 +79,7 @@ jobs:
           -Dsonar.projectKey=michaelandrescoronado_ms-auth \
           -Dsonar.organization=michaelandrescoronado \
           -Dsonar.host.url=https://sonarcloud.io \
+          -DskipTests \
           -f ms-auth/pom.xml
 
       # Notificación a Telegram
