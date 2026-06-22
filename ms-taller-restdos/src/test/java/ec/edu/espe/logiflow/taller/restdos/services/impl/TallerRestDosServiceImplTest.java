@@ -79,9 +79,9 @@ class TallerRestDosServiceImplTest {
     @SuppressWarnings("unchecked")
     private void setupWebClientGetMock(Object response) {
         when(flotaWebClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), anyString())).thenReturn(requestHeadersSpec);
+        // Asegúrate de que el matcher sea compatible con la firma real del método
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        // CORRECCIÓN AQUÍ: Se usa Mono.just() en lugar de Mono.of()
         when(responseSpec.bodyToMono(any(Class.class))).thenReturn(Mono.just(response));
     }
 

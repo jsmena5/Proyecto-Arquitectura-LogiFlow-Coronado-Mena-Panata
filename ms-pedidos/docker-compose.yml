@@ -1,0 +1,22 @@
+services:
+  postgres-pedidos:
+    image: postgres:16
+    container_name: postgres-pedidos
+    environment:
+      POSTGRES_DB: db_pedidos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - pedidos_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-logiflow
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  pedidos_data:
