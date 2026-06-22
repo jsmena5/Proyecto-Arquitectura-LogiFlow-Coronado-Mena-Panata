@@ -15,5 +15,33 @@ services:
       - postgres_logiflow_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
 
+  postgres-clientes:
+    image: postgres:16
+    container_name: postgres-clientes
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin123
+      POSTGRES_DB: db_clientes
+    ports:
+      - "5434:5432" # Puerto asignado para ms-clientes
+    volumes:
+      - postgres_clientes_data:/var/lib/postgresql/data
+
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres-auth
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin123
+      POSTGRES_DB: db_auth
+    ports:
+      - "5435:5432" # Puerto asignado para ms-auth
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+
 volumes:
   postgres_logiflow_data:
+  postgres_clientes_data: # Nuevo volumen
+  postgres_auth_data:     # Nuevo volumen
